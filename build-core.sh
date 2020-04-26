@@ -16,12 +16,12 @@
 
 print_usage()
 {
-    printf "Usage: %s <tx1|tx2|nano|xavier> <authority_id> <gadget_snap> <kernel_snap> [key_id]\n" \
+    printf "Usage: %s <tx1|tx2|nano|xavier> <assert_file> <gadget_snap> <kernel_snap>\n" \
            "$(basename "$0")"
 }
 
 # Input validation
-if [ $# -lt 4 ] || [ $# -gt 5 ]; then
+if [ $# -ne 4 ]; then
     print_usage
     exit 1
 fi
@@ -31,36 +31,14 @@ if [ "$board" != tx1 ] && [ "$board" != tx2 ] &&
     print_usage
     exit 1
 fi
-authority_id=$2
+assert_file=$2
 gadget_snap=$3
 kernel_snap=$4
-if [ $# -ge 5 ]; then
-    key_id=$5
-else
-    key_id=default
-fi
 
 channel=stable
 outdir=out-"$board"
 sudo rm -rf "$outdir"
 mkdir -p "$outdir"
-
-# Generate model assertion
-assert_file="$outdir"/jetson-"$board"-model.assert
-cat << EOF | snap sign -k "$key_id" > "$assert_file"
-{
-  "type": "model",
-  "authority-id": "$authority_id",
-  "brand-id": "$authority_id",
-  "series": "16",
-  "model": "jetson-$board",
-  "architecture": "arm64",
-  "base": "core18",
-  "gadget": "jetson-$board",
-  "kernel": "jetson-$board-kernel",
-  "timestamp": "$(date -Iseconds --utc)"
-}
-EOF
 
 # Create image file
 ubuntu-image snap --output-dir "$outdir" --workdir "$outdir" \
