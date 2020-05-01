@@ -16,12 +16,12 @@
 
 print_usage()
 {
-    printf "Usage: %s <tx1|tx2|nano|xavier> <assert_file> <gadget_snap> <kernel_snap>\n" \
+    printf "Usage: %s <tx1|tx2|nano|xavier> <assert_file> <auth_file>\n" \
            "$(basename "$0")"
 }
 
 # Input validation
-if [ $# -ne 4 ]; then
+if [ $# -ne 3 ]; then
     print_usage
     exit 1
 fi
@@ -32,8 +32,7 @@ if [ "$board" != tx1 ] && [ "$board" != tx2 ] &&
     exit 1
 fi
 assert_file=$2
-gadget_snap=$3
-kernel_snap=$4
+auth_file=$3
 
 channel=stable
 outdir=out-"$board"
@@ -41,10 +40,10 @@ sudo rm -rf "$outdir"
 mkdir -p "$outdir"
 
 # Create image file
-ubuntu-image snap --output-dir "$outdir" --workdir "$outdir" \
+UBUNTU_STORE_AUTH_DATA_FILENAME="$auth_file" ubuntu-image snap \
+             --output-dir "$outdir" \
+             --workdir "$outdir" \
              --channel "$channel" \
-             --snap "$gadget_snap" \
-             --snap "$kernel_snap" \
              "$assert_file"
 
 # Generate tarball with all the needed parts for flashing
